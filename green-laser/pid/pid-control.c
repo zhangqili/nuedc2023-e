@@ -22,6 +22,7 @@ void steery_control(void)
 	else if(steery.pidout<DEGREE0)steery.pidout=DEGREE0;
 	__HAL_TIM_SET_COMPARE(&htim5,TIM_CHANNEL_3,steery.pidout);
 }
+
 void pid_inti(PID *pid)
 {
   pid->instate = 0;
