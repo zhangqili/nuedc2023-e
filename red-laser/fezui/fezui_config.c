@@ -9,10 +9,8 @@
 #include "fezui_var.h"
 #include "lefl.h"
 #include "display.h"
-
-
-uint8_t tempuint;
-
+#include "w25qxx.h"
+#include "pid-control.h"
 
 void fezui_init()
 {
@@ -24,7 +22,8 @@ void fezui_init()
     u8g2_SetFontMode(&(fezui.u8g2), 1);
     u8g2_ClearBuffer(&(fezui.u8g2));
     u8g2_SendBuffer(&(fezui.u8g2));
-
+    W25qxx_Init();
+    fezui_read();
     lefl_link_frame_navigate(&mainframe, &menupage);
 }
 
@@ -71,6 +70,26 @@ void fezui_waiting()
     u8g2_SendBuffer(&(fezui.u8g2));
 }
 
-extern fezui_t fezui;
+void fezui_read()
+{
+    W25qxx_ReadBytes((uint8_t*)(&(theta_pid.pGain)),0+4*0,4);
+    W25qxx_ReadBytes((uint8_t*)(&(theta_pid.iGain)),0+4*1,4);
+    W25qxx_ReadBytes((uint8_t*)(&(theta_pid.dGain)),0+4*2,4);
+    W25qxx_ReadBytes((uint8_t*)(&(phi_pid.pGain)),0+4*3,4);
+    W25qxx_ReadBytes((uint8_t*)(&(phi_pid.iGain)),0+4*4,4);
+    W25qxx_ReadBytes((uint8_t*)(&(phi_pid.dGain)),0+4*5,4);
+}
 
+void fezui_save()
+{
+    uint8_t write_buffer[128];
+    memcpy(write_buffer+0*4,(uint8_t*)(&(theta_pid.pGain)),4);
+    memcpy(write_buffer+1*4,(uint8_t*)(&(theta_pid.iGain)),4);
+    memcpy(write_buffer+2*4,(uint8_t*)(&(theta_pid.dGain)),4);
+    memcpy(write_buffer+3*4,(uint8_t*)(&(phi_pid.pGain)),4);
+    memcpy(write_buffer+4*4,(uint8_t*)(&(phi_pid.iGain)),4);
+    memcpy(write_buffer+5*4,(uint8_t*)(&(phi_pid.dGain)),4);
+    W25qxx_EraseBlock(0);
+    W25qxx_WriteBlock(write_buffer, 0, 0, 4*8);
+}
 

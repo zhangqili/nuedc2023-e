@@ -101,10 +101,20 @@ void navigatepage_load(lefl_page_t *page)
     {
         if(navigatemenu.selected_index == 4)
         {
+
+#if DISCRETE_CONTROL == 1
+            move_count = cartesian_length(&point1, &point2)/10;
+            moving = true;
+            from_actual_point = &point1;
+            from_actual_point = &point2;
+            STEER_TIMER_START();
+            while(moving);
+#else
             fezui_waiting();
             steer_set_cartesian(&point1);
             HAL_Delay(1000);
             steer_linear_follow(&point1, &point2, 5000);
+#endif
             return;
         }
         if(number_editing)

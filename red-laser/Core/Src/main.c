@@ -21,6 +21,7 @@
 #include "dma.h"
 #include "i2c.h"
 #include "rng.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -30,6 +31,7 @@
 #include "steer.h"
 #include "fezui.h"
 #include "communication.h"
+#include "pid-control.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,6 +68,54 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+#define CPU_FREQUENCY_MHZ    168//
+void delay_us(__IO uint32_t delay)
+{
+  int last, curr, val;  int temp;
+  while (delay != 0)
+  {
+    temp = delay > 900 ? 900 : delay;
+    last = SysTick->VAL;
+    curr = last - CPU_FREQUENCY_MHZ * temp;
+    if (curr >= 0)
+    {
+      do{ val = SysTick->VAL; }
+      while ((val < last) && (val >= curr));
+    }
+    else
+    {
+       curr += CPU_FREQUENCY_MHZ * 1000;
+       do{ val = SysTick->VAL;  }
+       while ((val <= last) || (val > curr));
+    }
+       delay -= temp;
+  }
+}
+
+
+#define FAULT_TOLERANT 10 //容错，单位mm
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM6)
+    {
+        phi_pid.errdat = current_actual_point.x-target_actual_point.x;
+        theta_pid.errdat = current_actual_point.z-target_actual_point.z;
+        phi_control();
+        theta_control();
+        get_point_on_line(&target_actual_point, from_actual_point, to_actual_point, move_count, move_step);
+        move_step++;
+        //action();
+        if(move_step>=move_count&&phi_pid.errdat<FAULT_TOLERANT&&theta_pid.errdat<FAULT_TOLERANT)
+        {
+            moving=false;
+            move_step=0;
+            STEER_TIMER_STOP();
+        }
+    }
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -98,7 +148,6 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_I2C2_Init();
-  MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM5_Init();
@@ -109,6 +158,7 @@ int main(void)
   MX_USART3_UART_Init();
   MX_UART4_Init();
   MX_RNG_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
@@ -186,13 +236,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    if (htim->Instance == TIM5)
-    {
-        HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-    }
-}
 
 /* USER CODE END 4 */
 

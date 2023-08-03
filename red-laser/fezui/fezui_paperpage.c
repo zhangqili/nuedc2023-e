@@ -62,8 +62,7 @@ void paperpage_logic(lefl_page_t *page)
     }
     for (uint8_t i = 0; i < 4; i++)
     {
-        a4_actual_points[i].x = -250 + 500.0*(a4_points[i].x - (double)FRAME_PIXEL_X)/((double)FRAME_PIXEL_W) + X_CENTRAL;
-        a4_actual_points[i].z = 250 - 500.0*(a4_points[i].z - (double)FRAME_PIXEL_Y)/((double)FRAME_PIXEL_H) + Z_CENTRAL;
+        pixel_to_reality(a4_actual_points+i, a4_points+i);
     }
 }
 void paperpage_draw(lefl_page_t *page)
@@ -162,15 +161,50 @@ void paperpage_load(lefl_page_t *page)
     {
         if(papermenu.selected_index == 8)
         {
+#if DISCRETE_CONTROL == 1
+            fezui_waiting();
+            move_count = 1000;
+            moving = true;
+            from_actual_point = a4_actual_points+0;
+            from_actual_point = a4_actual_points+0;
+            STEER_TIMER_START();
+            while(moving);
+            move_count = cartesian_length(a4_actual_points+0, a4_actual_points+1)/10;
+            moving = true;
+            from_actual_point = a4_actual_points+0;
+            from_actual_point = a4_actual_points+1;
+            STEER_TIMER_START();
+            while(moving);
+            move_count = cartesian_length(a4_actual_points+1, a4_actual_points+2)/10;
+            moving = true;
+            from_actual_point = a4_actual_points+1;
+            from_actual_point = a4_actual_points+2;
+            STEER_TIMER_START();
+            while(moving);
+            move_count = cartesian_length(a4_actual_points+2, a4_actual_points+3)/10;
+            moving = true;
+            from_actual_point = a4_actual_points+2;
+            from_actual_point = a4_actual_points+3;
+            STEER_TIMER_START();
+            while(moving);
+            move_count = cartesian_length(a4_actual_points+3, a4_actual_points+0)/10;
+            moving = true;
+            from_actual_point = a4_actual_points+3;
+            from_actual_point = a4_actual_points+0;
+            STEER_TIMER_START();
+            while(moving);
+#else
             fezui_waiting();
             steer_set_cartesian(a4_points);
             HAL_Delay(1000);
             steer_linear_follow_loop_once(a4_actual_points
                     ,4,5000,100);
             return;
+#endif
         }
         if(number_editing)
         {
+
         }
         else
         {

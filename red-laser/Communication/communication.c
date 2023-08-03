@@ -34,14 +34,23 @@ void Communication_Unpack(UART_HandleTypeDef *huart)
             Communication_RX_Count++;
             USART1_RX_Length = BUFFER_LENGTH
                     - __HAL_DMA_GET_COUNTER(&hdma_usart1_rx);
-            a4_points[0].x = (int8_t) USART1_RX_Buffer[0];
-            a4_points[0].z = (int8_t) USART1_RX_Buffer[1];
-            a4_points[1].x = (int8_t) USART1_RX_Buffer[2];
-            a4_points[1].z = (int8_t) USART1_RX_Buffer[3];
-            a4_points[2].x = (int8_t) USART1_RX_Buffer[4];
-            a4_points[2].z = (int8_t) USART1_RX_Buffer[5];
-            a4_points[3].x = (int8_t) USART1_RX_Buffer[6];
-            a4_points[3].z = (int8_t) USART1_RX_Buffer[7];
+            if(USART1_RX_Buffer[USART1_RX_Length-1]==9)
+            {
+                a4_points[0].x = (int8_t) USART1_RX_Buffer[0];
+                a4_points[0].z = (int8_t) USART1_RX_Buffer[1];
+                a4_points[1].x = (int8_t) USART1_RX_Buffer[2];
+                a4_points[1].z = (int8_t) USART1_RX_Buffer[3];
+                a4_points[2].x = (int8_t) USART1_RX_Buffer[4];
+                a4_points[2].z = (int8_t) USART1_RX_Buffer[5];
+                a4_points[3].x = (int8_t) USART1_RX_Buffer[6];
+                a4_points[3].z = (int8_t) USART1_RX_Buffer[7];
+            }
+            if(USART1_RX_Buffer[USART1_RX_Length-1]==2)
+            {
+                current_point.x = (int8_t)USART1_RX_Buffer[0];
+                current_point.z = (int8_t)USART1_RX_Buffer[1];
+                pixel_to_reality(&current_actual_point, &current_point);
+            }
             HAL_UART_Receive_DMA(huart, USART1_RX_Buffer, BUFFER_LENGTH);
         }
         if (huart->Instance == USART3)
