@@ -20,6 +20,7 @@
 #include "main.h"
 #include "dma.h"
 #include "i2c.h"
+#include "rng.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -27,7 +28,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "steer.h"
-
+#include "fezui.h"
+#include "communication.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,7 +50,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint32_t theta_central = angle_to_pulse_theta(90.0);
+uint32_t phi_central = angle_to_pulse_phi(90.0);
+cartesian_coordinate_system_t central_point = {X_CENTRAL,Y_CENTRAL,Z_CENTRAL};
+cartesian_coordinate_system_t f_point = {250,Y_CENTRAL,194};
+cartesian_coordinate_system_t k_point = {-250,Y_CENTRAL,-100};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -102,21 +108,28 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_UART4_Init();
+  MX_RNG_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
-  cartesian_coordinate_system_t point1={200,500,200};
-  cartesian_coordinate_system_t point2={-200,500,600};
-  cartesian_coordinate_system_t point3={-200,200,300};
+  fezui_init();
   //HAL_TIM_Base_Start_IT(&htim5);
+  Communication_Enable(&huart1,USART1_RX_Buffer,BUFFER_LENGTH);
+  steer_set_cartesian(&central_point);
+  //HAL_Delay(1000);
+  //steer_linear_follow(&f_point,&k_point,4000);
+  //HAL_Delay(1000);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    steer_linear_follow(&point1,&point2,1000);
-    steer_linear_follow(&point2,&point1,1000);
+    fezui_timer_handler();
+    //steer_linear_follow(&point1,&point2,5000);
+    //HAL_Delay(1000);
+    //steer_linear_follow(&point2,&point1,5000);
+    //HAL_Delay(1000);
     //steer_linear_follow(&point3,&point1,1000);
     //__HAL_TIM_SET_COMPARE(&htim5,TIM_CHANNEL_3,angle_to_pulse(0));
     //HAL_Delay(1000);
@@ -151,7 +164,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = 4;
   RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
