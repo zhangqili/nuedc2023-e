@@ -53,7 +53,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+void delay_us(__IO uint32_t delay);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -61,12 +61,6 @@ void Error_Handler(void);
 #define KEY0_GPIO_Port GPIOA
 #define LED_Pin GPIO_PIN_1
 #define LED_GPIO_Port GPIOA
-#define Encoder_Left_A_Pin GPIO_PIN_6
-#define Encoder_Left_A_GPIO_Port GPIOA
-#define Encoder_Left_B_Pin GPIO_PIN_7
-#define Encoder_Left_B_GPIO_Port GPIOA
-#define BIN2_Pin GPIO_PIN_7
-#define BIN2_GPIO_Port GPIOE
 #define BIN1_Pin GPIO_PIN_8
 #define BIN1_GPIO_Port GPIOE
 #define AIN1_Pin GPIO_PIN_9
@@ -83,6 +77,12 @@ void Error_Handler(void);
 #define KEY4_GPIO_Port GPIOE
 #define KEY5_Pin GPIO_PIN_15
 #define KEY5_GPIO_Port GPIOE
+#define Encoder_Left_A_Pin GPIO_PIN_6
+#define Encoder_Left_A_GPIO_Port GPIOC
+#define Encoder_Left_B_Pin GPIO_PIN_7
+#define Encoder_Left_B_GPIO_Port GPIOC
+#define F_CS_Pin GPIO_PIN_15
+#define F_CS_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

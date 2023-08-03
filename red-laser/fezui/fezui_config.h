@@ -18,7 +18,7 @@
 #define SCREEN_REST_TIME      60
 #define KEY_NUM               12
 #define MAIN_KEY_NUM          4
-#define ITEM_HEIGHT           12
+#define ITEM_HEIGHT           14
 #define HISTORY_LENGTH        65
 
 #define _SCREEN_REST_ON
@@ -28,8 +28,8 @@
 
 
 void Analog_Read();
-void fezui_read_counts();
-void fezui_save_counts();
+void fezui_read();
+void fezui_save();
 void fezui_waiting();
 
 extern lefl_link_frame_t mainframe;
@@ -70,5 +70,10 @@ extern lefl_page_t paperpage;
 void paperpage_logic(lefl_page_t *page);
 void paperpage_draw(lefl_page_t *page);
 void paperpage_load(lefl_page_t *page);
+
+extern lefl_page_t pidpage;
+void pidpage_logic(lefl_page_t *page);
+void pidpage_draw(lefl_page_t *page);
+void pidpage_load(lefl_page_t *page);
 
 #endif /* FEZUI_CONFIG_H_ */

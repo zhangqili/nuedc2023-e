@@ -7,6 +7,7 @@
 #include "steer.h"
 #include "math.h"
 #include "tim.h"
+#include "PID.h"
 
 #define PI         3.14159265358979323846
 #define FLOAT_EPS  1e-6
@@ -14,6 +15,21 @@
 
 schmitt_t theta_adjust = {.parameter = 500};
 schmitt_t phi_adjust = {.parameter = 500};
+
+cartesian_coordinate_system_t current_point = {0,Y_CENTRAL,0};
+cartesian_coordinate_system_t current_actual_point = {0,Y_CENTRAL,0};
+cartesian_coordinate_system_t target_actual_point = {0,Y_CENTRAL,0};
+cartesian_coordinate_system_t *from_actual_point;
+cartesian_coordinate_system_t *to_actual_point;
+
+void (* action)(void);
+void (* steer_set_target)(void);
+
+uint32_t line_count=0;
+uint32_t move_count=0;
+uint32_t move_step=0;
+
+bool moving;
 
 void steer_schmitt_init()
 {
@@ -106,7 +122,8 @@ void spherical_to_cartesian(cartesian_coordinate_system_t *c, spherical_coordina
     static cartesian_coordinate_system_t p1 = {300,Y_CENTRAL,300};
     static cartesian_coordinate_system_t p2 = {-300,Y_CENTRAL,-300};
     steer_linear_follow(&p1, &p2, 5000);
-    theta_adjust.peak = __HAL_TIM_GET_COMPARE(&him5,TIM_CHANNEL_3);
+    theta_adjust.peak = __HAL_TIM_GET_COMPARE(&htim5,TIM_CHANNEL_3);
+    theta_adjust.peak = __HAL_TIM_GET_COMPARE(&htim5,TIM_CHANNEL_3);
 }
 
 void steer_set_spherical(spherical_coordinate_system_t *s)
@@ -187,12 +204,17 @@ void steer_linear_follow(cartesian_coordinate_system_t *from, cartesian_coordina
     cartesian_coordinate_system_t c;
     for (uint32_t i = 0; i < period; i++)
     {
-        c.x = from->x + (to->x-from->x)*((double)(i))/((double)(period));
-        c.y = from->y + (to->y-from->y)*((double)(i))/((double)(period));
-        c.z = from->z + (to->z-from->z)*((double)(i))/((double)(period));
+        get_point_on_line(&c,from,to,period,i);
         steer_set_cartesian(&c);
         //HAL_Delay(1);
     }
+}
+
+void get_point_on_line(cartesian_coordinate_system_t *output, cartesian_coordinate_system_t *from, cartesian_coordinate_system_t *to, uint32_t period, uint32_t x)
+{
+    output->x = from->x + (to->x-from->x)*((double)(x))/((double)(period));
+    output->y = from->y + (to->y-from->y)*((double)(x))/((double)(period));
+    output->z = from->z + (to->z-from->z)*((double)(x))/((double)(period));
 }
 
 void steer_linear_follow_continuously(cartesian_coordinate_system_t *points, uint32_t count, uint32_t period, uint32_t pause)
@@ -214,20 +236,19 @@ void steer_linear_follow_loop_once(cartesian_coordinate_system_t *points, uint32
     steer_linear_follow(points+count-1, points, period);
 }
 
+void pixel_to_reality(cartesian_coordinate_system_t *to,cartesian_coordinate_system_t *from)
+{
+    to->x = -250 + 500.0*(from->x - (double)FRAME_PIXEL_X)/((double)FRAME_PIXEL_W) + X_CENTRAL;
+    to->z = 250 - 500.0*(from->z - (double)FRAME_PIXEL_Y)/((double)FRAME_PIXEL_H) + Z_CENTRAL;
+}
+
+
+double cartesian_length(cartesian_coordinate_system_t *p1, cartesian_coordinate_system_t *p2)
+{
+    return sqrt(((p1->x)-(p2->x))*((p1->x)-(p2->x))+((p1->y)-(p2->y))*((p1->y)-(p2->y))+((p1->z)-(p2->z))*((p1->z)-(p2->z)));
+}
+
 void steer_linear_follow_to(cartesian_coordinate_system_t *to, uint32_t period)
 {
-    /*
-    cartesian_coordinate_system_t c;
-    spherical_coordinate_system_t s;
-    s.theta = __HAL_TIM_GET_COMPARE(&htim5,TIM_CHANNEL_3);
-    s.phi = __HAL_TIM_GET_COMPARE(&htim5,TIM_CHANNEL_4);
-    for (uint32_t i = 0; i < period; i++)
-    {
-        c.x = from->x + (to->x-from->x)*((float)(i))/((float)(period));
-        c.y = from->y + (to->y-from->y)*((float)(i))/((float)(period));
-        c.z = from->z + (to->z-from->z)*((float)(i))/((float)(period));
-        steer_set_cartesian(&c);
-        HAL_Delay(1);
-    }
-    */
+
 }
