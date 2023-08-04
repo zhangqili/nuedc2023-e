@@ -53,6 +53,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void delay_us(__IO uint32_t delay);
 
 /* USER CODE END EFP */
 
@@ -83,6 +84,8 @@ void Error_Handler(void);
 #define KEY4_GPIO_Port GPIOE
 #define KEY5_Pin GPIO_PIN_15
 #define KEY5_GPIO_Port GPIOE
+#define F_CS_Pin GPIO_PIN_15
+#define F_CS_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 
