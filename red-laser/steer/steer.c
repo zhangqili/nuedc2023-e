@@ -13,12 +13,15 @@
 #define FLOAT_EPS  1e-6
 #define iszero(x)  (fabs(x)<10.0*FLOAT_EPS)
 
+uint32_t theta_central;
+uint32_t phi_central;
+
 schmitt_t theta_adjust = {.parameter = 500};
 schmitt_t phi_adjust = {.parameter = 500};
 
 cartesian_coordinate_system_t current_point = {0,Y_CENTRAL,0};
 cartesian_coordinate_system_t current_actual_point = {0,Y_CENTRAL,0};
-cartesian_coordinate_system_t target_actual_point = {0,Y_CENTRAL,0};
+cartesian_coordinate_system_t target_actual_point;
 cartesian_coordinate_system_t *from_actual_point;
 cartesian_coordinate_system_t *to_actual_point;
 
@@ -30,6 +33,9 @@ uint32_t move_count=0;
 uint32_t move_step=0;
 
 bool moving;
+
+cartesian_coordinate_system_t *point_collection[16];
+QUEUE_HandleTypeDef point_queue;
 
 void steer_schmitt_init()
 {

@@ -69,6 +69,7 @@ void adjustpage_load(lefl_page_t *page)
         }
         else
         {
+            fezui_save();
             lefl_link_frame_go_back(&mainframe);
         }
     });
@@ -100,7 +101,7 @@ void adjustpage_load(lefl_page_t *page)
         }
         else
         {
-            lefl_menu_index_increase(&adjustmenu, -1);
+            lefl_menu_index_increase(&adjustmenu, 1);
         }
     });
     key_up.key_cb = lambda(void, (lefl_key_t*k)
@@ -121,7 +122,7 @@ void adjustpage_load(lefl_page_t *page)
         }
         else
         {
-            lefl_menu_index_increase(&adjustmenu, 1);
+            lefl_menu_index_increase(&adjustmenu, -1);
         }
     });
 }

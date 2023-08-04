@@ -10,55 +10,9 @@
 
 #include "main.h"
 #include "stdbool.h"
+#include "steer_def.h"
+#include "queue.h"
 
-typedef struct __cartesian_coordinate_system_t
-{
-	double x;
-	double y;
-	double z;
-} cartesian_coordinate_system_t;
-
-
-typedef struct __spherical_coordinate_system_t
-{
-    double r;
-	double theta;
-	double phi;
-} spherical_coordinate_system_t;
-
-
-typedef struct __schmitt_t
-{
-    double parameter;
-    double peak;
-} schmitt_t;
-
-
-#define SEMICIRCLE (182720 - 69020)
-
-
-#define X_CENTRAL 0
-#define Y_CENTRAL 1020
-#define Z_CENTRAL 200
-
-#define THETA_CENTRAL 117370
-
-#define PHI_CENTRAL 123370
-
-#define FRAME_PIXEL_X 15
-#define FRAME_PIXEL_Y 15
-#define FRAME_PIXEL_W 106-15
-#define FRAME_PIXEL_H 106-15
-
-
-#define THETA_DEGREE_0 ((THETA_CENTRAL*2-SEMICIRCLE)/2)
-#define THETA_DEGREE_180 ((THETA_CENTRAL*2-SEMICIRCLE)/2+SEMICIRCLE)
-
-#define PHI_DEGREE_0 ((PHI_CENTRAL*2-SEMICIRCLE)/2)
-#define PHI_DEGREE_180 ((PHI_CENTRAL*2-SEMICIRCLE)/2+SEMICIRCLE)
-
-#define STEER_TIMER_START() HAL_TIM_Base_Start_IT(&htim6)
-#define STEER_TIMER_STOP() HAL_TIM_Base_Stop_IT(&htim6)
 
 //#define THETA_DEGREE_0 (69020-2000)
 //#define THETA_DEGREE_180 (182720-2000)
@@ -66,8 +20,8 @@ typedef struct __schmitt_t
 //#define PHI_DEGREE_0 66520
 //#define PHI_DEGREE_180 (PHI_DEGREE_0+THETA_DEGREE_180-THETA_DEGREE_0)
 
-#define RADIUS_Y 60
-#define DISCRETE_CONTROL 1
+#define RADIUS_Y 55
+#define DISCRETE_CONTROL 0
 
 extern uint32_t line_count;
 extern uint32_t move_count;
@@ -95,11 +49,18 @@ void steer_linear_follow_continuously(cartesian_coordinate_system_t *points, uin
 void steer_linear_follow_loop_once(cartesian_coordinate_system_t *points, uint32_t count, uint32_t period, uint32_t pause);
 void pixel_to_reality(cartesian_coordinate_system_t *to,cartesian_coordinate_system_t *from);
 void get_point_on_line(cartesian_coordinate_system_t *output, cartesian_coordinate_system_t *from, cartesian_coordinate_system_t *to, uint32_t period, uint32_t x);
+double cartesian_length(cartesian_coordinate_system_t *p1, cartesian_coordinate_system_t *p2);
+
+extern uint32_t theta_central;
+extern uint32_t phi_central;
 
 extern cartesian_coordinate_system_t current_point;
 extern cartesian_coordinate_system_t current_actual_point;
 extern cartesian_coordinate_system_t target_actual_point;
 extern cartesian_coordinate_system_t *from_actual_point;
 extern cartesian_coordinate_system_t *to_actual_point;
+
+extern cartesian_coordinate_system_t *point_collection[16];
+extern QUEUE_HandleTypeDef point_queue;
 
 #endif /* STEER_H_ */

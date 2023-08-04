@@ -17,7 +17,7 @@ extern bool number_editing;
 
 #define ROW_HEIGHT 13
 
-cartesian_coordinate_system_t a4_points[4]={{0,Y_CENTRAL,0},{0,Y_CENTRAL,0},{0,Y_CENTRAL,0},{0,Y_CENTRAL,0}};
+cartesian_coordinate_system_t a4_points[4]={{146,Y_CENTRAL,188},{194,Y_CENTRAL,125},{132,Y_CENTRAL,64},{75,Y_CENTRAL,118}};
 cartesian_coordinate_system_t a4_actual_points[4]={{0,Y_CENTRAL,0},{0,Y_CENTRAL,0},{0,Y_CENTRAL,0},{0,Y_CENTRAL,0}};
 
 static fezui_scrollview_t scrollview ={.content_height=12*9,.content_width=40};
@@ -163,36 +163,16 @@ void paperpage_load(lefl_page_t *page)
         {
 #if DISCRETE_CONTROL == 1
             fezui_waiting();
-            move_count = 1000;
+            move_count = 100;
             moving = true;
             from_actual_point = a4_actual_points+0;
-            from_actual_point = a4_actual_points+0;
+            to_actual_point = a4_actual_points+0;
+            Queue_Push(&point_queue, a4_actual_points+1);
+            Queue_Push(&point_queue, a4_actual_points+2);
+            Queue_Push(&point_queue, a4_actual_points+3);
+            Queue_Push(&point_queue, a4_actual_points+0);
             STEER_TIMER_START();
-            while(moving);
-            move_count = cartesian_length(a4_actual_points+0, a4_actual_points+1)/10;
-            moving = true;
-            from_actual_point = a4_actual_points+0;
-            from_actual_point = a4_actual_points+1;
-            STEER_TIMER_START();
-            while(moving);
-            move_count = cartesian_length(a4_actual_points+1, a4_actual_points+2)/10;
-            moving = true;
-            from_actual_point = a4_actual_points+1;
-            from_actual_point = a4_actual_points+2;
-            STEER_TIMER_START();
-            while(moving);
-            move_count = cartesian_length(a4_actual_points+2, a4_actual_points+3)/10;
-            moving = true;
-            from_actual_point = a4_actual_points+2;
-            from_actual_point = a4_actual_points+3;
-            STEER_TIMER_START();
-            while(moving);
-            move_count = cartesian_length(a4_actual_points+3, a4_actual_points+0)/10;
-            moving = true;
-            from_actual_point = a4_actual_points+3;
-            from_actual_point = a4_actual_points+0;
-            STEER_TIMER_START();
-            while(moving);
+            //while(moving);
 #else
             fezui_waiting();
             steer_set_cartesian(a4_points);

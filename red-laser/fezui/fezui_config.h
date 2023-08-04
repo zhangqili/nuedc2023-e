@@ -28,7 +28,8 @@
 
 
 void Analog_Read();
-void fezui_read();
+void fezui_read_pid();
+void fezui_read_central();
 void fezui_save();
 void fezui_waiting();
 

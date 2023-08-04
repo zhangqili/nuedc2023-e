@@ -23,8 +23,8 @@ extern bool number_editing;
 
 #define ROW_HEIGHT 13
 
-static cartesian_coordinate_system_t point1={0,Y_CENTRAL,200};
-static cartesian_coordinate_system_t point2={0,Y_CENTRAL,400};
+static cartesian_coordinate_system_t point1={-200,Y_CENTRAL,200};
+static cartesian_coordinate_system_t point2={200,Y_CENTRAL,400};
 
 lefl_menu_t navigatemenu = {
     .items = {"X1","Z1", "X2", "Z2", "Go"},
@@ -106,9 +106,10 @@ void navigatepage_load(lefl_page_t *page)
             move_count = cartesian_length(&point1, &point2)/10;
             moving = true;
             from_actual_point = &point1;
-            from_actual_point = &point2;
+            to_actual_point = &point2;
+            move_count = 200;
+            moving = true;
             STEER_TIMER_START();
-            while(moving);
 #else
             fezui_waiting();
             steer_set_cartesian(&point1);
