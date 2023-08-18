@@ -20,12 +20,19 @@
 #include "main.h"
 #include "dma.h"
 #include "i2c.h"
+#include "rng.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "steer.h"
+#include "fezui.h"
+#include "communication.h"
+#include "pid-control.h"
+#include "queue.h"
 
 /* USER CODE END Includes */
 
@@ -47,6 +54,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+cartesian_coordinate_system_t central_point = {X_CENTRAL,Y_CENTRAL,Z_CENTRAL};
+cartesian_coordinate_system_t f_point = {250,Y_CENTRAL,194};
+cartesian_coordinate_system_t k_point = {-250,Y_CENTRAL,-100};
+cartesian_coordinate_system_t *temp_point;
 
 /* USER CODE END PV */
 
@@ -58,6 +69,49 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
+#define CPU_FREQUENCY_MHZ    168//
+void delay_us(__IO uint32_t delay)
+{
+  int last, curr, val;  int temp;
+  while (delay != 0)
+  {
+    temp = delay > 900 ? 900 : delay;
+    last = SysTick->VAL;
+    curr = last - CPU_FREQUENCY_MHZ * temp;
+    if (curr >= 0)
+    {
+      do{ val = SysTick->VAL; }
+      while ((val < last) && (val >= curr));
+    }
+    else
+    {
+       curr += CPU_FREQUENCY_MHZ * 1000;
+       do{ val = SysTick->VAL;  }
+       while ((val <= last) || (val > curr));
+    }
+       delay -= temp;
+  }
+}
+
+
+#define FAULT_TOLERANT 0 //容错，单位mm
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM6)
+    {
+        if(fabs(phi_pid.errdat)>FAULT_TOLERANT)
+        {
+            phi_control();
+        }
+        if(fabs(theta_pid.errdat)>FAULT_TOLERANT)
+        {
+            theta_control();
+        }
+    }
+}
+
 
 /* USER CODE END 0 */
 
@@ -101,14 +155,28 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART3_UART_Init();
   MX_UART4_Init();
+  MX_SPI1_Init();
+  MX_RNG_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
+  Queue_Init(&point_queue, point_collection, 16);
+  fezui_init();
+  //HAL_TIM_Base_Start_IT(&htim5);
+  Communication_Enable(&huart1,USART1_RX_Buffer,BUFFER_LENGTH);
+  steer_set_cartesian(&central_point);
+  theta_pid.last_pidout = steer_set_theta(90);
+  theta_pid.pidout = steer_set_theta(90);
+  phi_pid.last_pidout = steer_set_phi(90);
+  phi_pid.pidout = steer_set_phi(90);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+      fezui_timer_handler();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -140,7 +208,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = 4;
   RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();

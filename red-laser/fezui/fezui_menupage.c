@@ -8,6 +8,7 @@
 #include "fezui.h"
 #include "fezui_var.h"
 #include "steer.h"
+#include "tim.h"
 
 lefl_page_t menupage={menupage_logic,menupage_draw,menupage_load};
 
@@ -20,10 +21,13 @@ lefl_menu_t mainmenu = {
 
 #define RECT_HALF_LEHGTH 260
 extern cartesian_coordinate_system_t central_point;
-static cartesian_coordinate_system_t frame_point1 = {X_CENTRAL-270,Y_CENTRAL,Z_CENTRAL+270};
-static cartesian_coordinate_system_t frame_point2 = {X_CENTRAL+260,Y_CENTRAL,Z_CENTRAL+270};
+static cartesian_coordinate_system_t frame_point1 = {X_CENTRAL-280,Y_CENTRAL,Z_CENTRAL+260};
+static cartesian_coordinate_system_t frame_point2 = {X_CENTRAL+260,Y_CENTRAL,Z_CENTRAL+260};
 static cartesian_coordinate_system_t frame_point3 = {X_CENTRAL+260,Y_CENTRAL,Z_CENTRAL-260};
-static cartesian_coordinate_system_t frame_point4 = {X_CENTRAL-270,Y_CENTRAL,Z_CENTRAL-260};
+static cartesian_coordinate_system_t frame_point4 = {X_CENTRAL-280,Y_CENTRAL,Z_CENTRAL-260};
+
+static fezui_scrollview_t scrollview ={.content_height=ITEM_HEIGHT*6,.content_width=40};
+static float target_ordinate=0;
 
 static fezui_scrollview_t scrollview ={.content_height=ITEM_HEIGHT*6,.content_width=40};
 static float target_ordinate=0;
@@ -72,7 +76,14 @@ void main_menu_cb(lefl_menu_t *menu)
         break;
     case 2:
 #if DISCRETE_CONTROL == 1
-
+        move_count = 100;
+        moving = true;
+        to_actual_point = &frame_point1;
+        Queue_Push(&point_queue, &frame_point2);
+        Queue_Push(&point_queue, &frame_point3);
+        Queue_Push(&point_queue, &frame_point4);
+        Queue_Push(&point_queue, &frame_point1);
+        STEER_TIMER_START();
 #else
         fezui_waiting();
         steer_set_cartesian(&central_point);

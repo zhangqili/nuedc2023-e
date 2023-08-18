@@ -25,6 +25,7 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "queue.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -52,11 +53,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint32_t theta_central = angle_to_pulse_theta(90.0);
-uint32_t phi_central = angle_to_pulse_phi(90.0);
 cartesian_coordinate_system_t central_point = {X_CENTRAL,Y_CENTRAL,Z_CENTRAL};
 cartesian_coordinate_system_t f_point = {250,Y_CENTRAL,194};
 cartesian_coordinate_system_t k_point = {-250,Y_CENTRAL,-100};
+cartesian_coordinate_system_t *temp_point;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -93,24 +93,36 @@ void delay_us(__IO uint32_t delay)
   }
 }
 
-
-#define FAULT_TOLERANT 10 //容错，单位mm
+#define FAULT_TOLERANT 20 //容错，单位mm
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM6)
     {
+
+        get_point_on_line(&target_actual_point, from_actual_point, to_actual_point, move_count, move_step);
         phi_pid.errdat = current_actual_point.x-target_actual_point.x;
         theta_pid.errdat = current_actual_point.z-target_actual_point.z;
         phi_control();
         theta_control();
-        get_point_on_line(&target_actual_point, from_actual_point, to_actual_point, move_count, move_step);
         move_step++;
-        //action();
-        if(move_step>=move_count&&phi_pid.errdat<FAULT_TOLERANT&&theta_pid.errdat<FAULT_TOLERANT)
+        if(move_step>=move_count)
         {
-            moving=false;
-            move_step=0;
-            STEER_TIMER_STOP();
+            move_step=move_count;
+            if(phi_pid.errdat<FAULT_TOLERANT&&theta_pid.errdat<FAULT_TOLERANT)
+            {
+                move_step=0;
+                if(!Queue_Pop(&point_queue, &temp_point))
+                {
+                    from_actual_point = to_actual_point;
+                    to_actual_point = temp_point;
+                    move_count = cartesian_length(from_actual_point, to_actual_point)/4;
+                }
+                else
+                {
+                    STEER_TIMER_STOP();
+                    moving=false;
+                }
+            }
         }
     }
 }
@@ -162,10 +174,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
+  Queue_Init(&point_queue, point_collection, 16);
   fezui_init();
   //HAL_TIM_Base_Start_IT(&htim5);
   Communication_Enable(&huart1,USART1_RX_Buffer,BUFFER_LENGTH);
   steer_set_cartesian(&central_point);
+
   //HAL_Delay(1000);
   //steer_linear_follow(&f_point,&k_point,4000);
   //HAL_Delay(1000);
