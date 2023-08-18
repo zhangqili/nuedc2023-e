@@ -10,9 +10,12 @@
 
 #include "main.h"
 #include "stdbool.h"
+
 #include "steer_def.h"
 #include "queue.h"
 
+#define STEER_TIMER_START() HAL_TIM_Base_Start_IT(&htim6)
+#define STEER_TIMER_STOP() HAL_TIM_Base_Stop_IT(&htim6)
 
 //#define THETA_DEGREE_0 (69020-2000)
 //#define THETA_DEGREE_180 (182720-2000)
@@ -49,6 +52,7 @@ void steer_linear_follow_continuously(cartesian_coordinate_system_t *points, uin
 void steer_linear_follow_loop_once(cartesian_coordinate_system_t *points, uint32_t count, uint32_t period, uint32_t pause);
 void pixel_to_reality(cartesian_coordinate_system_t *to,cartesian_coordinate_system_t *from);
 void get_point_on_line(cartesian_coordinate_system_t *output, cartesian_coordinate_system_t *from, cartesian_coordinate_system_t *to, uint32_t period, uint32_t x);
+
 double cartesian_length(cartesian_coordinate_system_t *p1, cartesian_coordinate_system_t *p2);
 
 extern uint32_t theta_central;

@@ -93,12 +93,12 @@ void delay_us(__IO uint32_t delay)
   }
 }
 
-
 #define FAULT_TOLERANT 20 //容错，单位mm
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM6)
     {
+
         get_point_on_line(&target_actual_point, from_actual_point, to_actual_point, move_count, move_step);
         phi_pid.errdat = current_actual_point.x-target_actual_point.x;
         theta_pid.errdat = current_actual_point.z-target_actual_point.z;

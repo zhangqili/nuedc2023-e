@@ -7,6 +7,7 @@
 #include "steer.h"
 #include "math.h"
 #include "tim.h"
+#include "PID.h"
 
 #define PI         3.14159265358979323846
 #define FLOAT_EPS  1e-6

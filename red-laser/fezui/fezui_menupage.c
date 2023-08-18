@@ -29,6 +29,9 @@ static cartesian_coordinate_system_t frame_point4 = {X_CENTRAL-280,Y_CENTRAL,Z_C
 static fezui_scrollview_t scrollview ={.content_height=ITEM_HEIGHT*6,.content_width=40};
 static float target_ordinate=0;
 
+static fezui_scrollview_t scrollview ={.content_height=ITEM_HEIGHT*6,.content_width=40};
+static float target_ordinate=0;
+
 void menupage_logic(lefl_page_t *page)
 {
     lefl_cursor_set(

@@ -130,6 +130,18 @@ void fezui_read_pid()
     W25qxx_ReadBytes((uint8_t*)(&(phi_pid.dGain)),0+4*5,4);
 }
 
+void fezui_save()
+{
+    uint8_t write_buffer[128];
+    memcpy(write_buffer+0*4,(uint8_t*)(&(theta_pid.pGain)),4);
+    memcpy(write_buffer+1*4,(uint8_t*)(&(theta_pid.iGain)),4);
+    memcpy(write_buffer+2*4,(uint8_t*)(&(theta_pid.dGain)),4);
+    memcpy(write_buffer+3*4,(uint8_t*)(&(phi_pid.pGain)),4);
+    memcpy(write_buffer+4*4,(uint8_t*)(&(phi_pid.iGain)),4);
+    memcpy(write_buffer+5*4,(uint8_t*)(&(phi_pid.dGain)),4);
+    W25qxx_EraseBlock(0);
+    W25qxx_WriteBlock(write_buffer, 0, 0, 4*8);
+}
 
 void fezui_read_central()
 {
