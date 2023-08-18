@@ -9,7 +9,7 @@
 
 PID相关代码由[fby6666](https://github.com/fby6666)编写
 
-Open相关代码由[PohaiXiao](https://github.com/PohaiXiao)编写
+OpenMV相关代码由[PohaiXiao](https://github.com/PohaiXiao)编写
 
 该项目包含多级菜单，可以在测评前对相关参数进行调节
 
