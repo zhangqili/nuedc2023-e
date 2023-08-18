@@ -12,6 +12,7 @@
 #include "stdbool.h"
 #include "steer_def.h"
 #include "queue.h"
+#include "lefl.h"
 
 
 //#define THETA_DEGREE_0 (69020-2000)
@@ -20,13 +21,22 @@
 //#define PHI_DEGREE_0 66520
 //#define PHI_DEGREE_180 (PHI_DEGREE_0+THETA_DEGREE_180-THETA_DEGREE_0)
 
-#define RADIUS_Y 55
+#define RADIUS_Y 65
 #define DISCRETE_CONTROL 0
+#define DISCRETE_MOVE 0
+#define GLOBAL_FIXED_DISTANCE 1
+#define PAUSE_ENABLE 1
 
+#define DISCRETE_MOVE_PARAMETER 1
+extern lefl_key_t pause_key;
+extern bool paused;
 extern uint32_t line_count;
 extern uint32_t move_count;
 extern uint32_t move_step;
 extern bool moving;
+
+#define PAUSE_CHECK()   lefl_key_update(&pause_key, !HAL_GPIO_ReadPin(KEY5_GPIO_Port, KEY5_Pin));\
+                        while(paused){lefl_key_update(&pause_key, !HAL_GPIO_ReadPin(KEY5_GPIO_Port, KEY5_Pin));fezui_paused();}\
 
 extern void (* action)(void);
 extern void (* steer_set_target)(void);
@@ -53,6 +63,10 @@ double cartesian_length(cartesian_coordinate_system_t *p1, cartesian_coordinate_
 
 extern uint32_t theta_central;
 extern uint32_t phi_central;
+extern uint32_t move_interval;
+extern uint32_t move_interval_i;
+
+extern double distance;
 
 extern cartesian_coordinate_system_t current_point;
 extern cartesian_coordinate_system_t current_actual_point;

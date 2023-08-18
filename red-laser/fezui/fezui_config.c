@@ -13,6 +13,9 @@
 #include "steer.h"
 #include "pid-control.h"
 
+extern double frame_offsets[4];
+extern cartesian_coordinate_system_t central_point;
+
 void fezui_init()
 {
     u8g2_Setup_ssd1306_i2c_128x64_noname_f(&(fezui.u8g2), U8G2_R0, u8x8_byte_hw_i2c,
@@ -24,17 +27,7 @@ void fezui_init()
     u8g2_ClearBuffer(&(fezui.u8g2));
     u8g2_SendBuffer(&(fezui.u8g2));
     W25qxx_Init();
-    fezui_read_pid();
-    fezui_read_central();
-    //theta_central = 117370;
-    //phi_central = 123370;
-    //theta_pid.pGain=8;
-    //theta_pid.iGain=3;
-    //theta_pid.dGain=0;
-    //phi_pid.pGain=25;
-    //phi_pid.iGain=4;
-    //phi_pid.dGain=0;
-    //fezui_save();
+    fezui_read_all();
     lefl_link_frame_navigate(&mainframe, &menupage);
 }
 #define ROW_HEIGHT 8
@@ -120,6 +113,14 @@ void fezui_waiting()
     u8g2_SendBuffer(&(fezui.u8g2));
 }
 
+void fezui_paused()
+{
+    u8g2_ClearBuffer(&(fezui.u8g2));
+    u8g2_SetFont(&(fezui.u8g2), u8g2_font_6x12_tf);
+    u8g2_DrawStr(&(fezui.u8g2),0,32,"paused");
+    u8g2_SendBuffer(&(fezui.u8g2));
+}
+
 void fezui_read_pid()
 {
     W25qxx_ReadBytes((uint8_t*)(&(theta_pid.pGain)),0+4*0,4);
@@ -137,18 +138,55 @@ void fezui_read_central()
     W25qxx_ReadBytes((uint8_t*)(&phi_central),0+4*7,4);
 }
 
+void fezui_read_all()
+{
+    fezui_read_pid();
+    fezui_read_central();
+    W25qxx_ReadBytes((uint8_t*)(&distance),0+4*8,8);
+    W25qxx_ReadBytes((uint8_t*)(frame_offsets+0),0+4*10,8);
+    W25qxx_ReadBytes((uint8_t*)(frame_offsets+1),0+4*12,8);
+    W25qxx_ReadBytes((uint8_t*)(frame_offsets+2),0+4*14,8);
+    W25qxx_ReadBytes((uint8_t*)(frame_offsets+3),0+4*16,8);
+    W25qxx_ReadBytes((uint8_t*)(&(central_point.z)),0+4*18,8);
+}
+
 void fezui_save()
 {
     uint8_t write_buffer[128];
-    memcpy(write_buffer+4*0,(uint8_t*)(&(theta_pid.pGain)),4);
-    memcpy(write_buffer+4*1,(uint8_t*)(&(theta_pid.iGain)),4);
-    memcpy(write_buffer+4*2,(uint8_t*)(&(theta_pid.dGain)),4);
-    memcpy(write_buffer+4*3,(uint8_t*)(&(phi_pid.pGain)),4);
-    memcpy(write_buffer+4*4,(uint8_t*)(&(phi_pid.iGain)),4);
-    memcpy(write_buffer+4*5,(uint8_t*)(&(phi_pid.dGain)),4);
-    memcpy(write_buffer+4*6,(uint8_t*)(&theta_central),4);
-    memcpy(write_buffer+4*7,(uint8_t*)(&phi_central),4);
+    memcpy(write_buffer+4*0, (uint8_t*)(&(theta_pid.pGain)),4);
+    memcpy(write_buffer+4*1, (uint8_t*)(&(theta_pid.iGain)),4);
+    memcpy(write_buffer+4*2, (uint8_t*)(&(theta_pid.dGain)),4);
+    memcpy(write_buffer+4*3, (uint8_t*)(&(phi_pid.pGain)),4);
+    memcpy(write_buffer+4*4, (uint8_t*)(&(phi_pid.iGain)),4);
+    memcpy(write_buffer+4*5, (uint8_t*)(&(phi_pid.dGain)),4);
+    memcpy(write_buffer+4*6, (uint8_t*)(&theta_central),4);
+    memcpy(write_buffer+4*7, (uint8_t*)(&phi_central),4);
+    memcpy(write_buffer+4*8, (uint8_t*)(&distance),8);
+    memcpy(write_buffer+4*10, (uint8_t*)(frame_offsets+0),8);
+    memcpy(write_buffer+4*12, (uint8_t*)(frame_offsets+1),8);
+    memcpy(write_buffer+4*14, (uint8_t*)(frame_offsets+2),8);
+    memcpy(write_buffer+4*16, (uint8_t*)(frame_offsets+3),8);
+    memcpy(write_buffer+4*18, (uint8_t*)(&(central_point.z)),8);
     W25qxx_EraseBlock(0);
-    W25qxx_WriteBlock(write_buffer, 0, 0, 4*8);
+    W25qxx_WriteBlock(write_buffer, 0, 0, 4*20);
 }
 
+
+void fezui_reset()
+{
+    theta_central = 109570;
+    phi_central = 125870;
+    theta_pid.pGain=16.7;
+    theta_pid.iGain=2.3;
+    theta_pid.dGain=0;
+    phi_pid.pGain=20;
+    phi_pid.iGain=2.1;
+    phi_pid.dGain=0;
+    distance = 1020;
+    frame_offsets[0] = 20;
+    frame_offsets[1] = 10;
+    frame_offsets[2] = 10;
+    frame_offsets[3] = 20;
+    central_point.z = 196;
+    fezui_save();
+}

@@ -96,11 +96,27 @@ void delay_us(__IO uint32_t delay)
 }
 
 
-#define FAULT_TOLERANT 0 //容错，单位mm
+#define FAULT_TOLERANT 6 //容错，单位mm
+#define ALERT_TOLERANT 8 //容错，单位mm
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM6)
     {
+
+#if PAUSE_ENABLE  == 1
+        lefl_key_update(&pause_key, !HAL_GPIO_ReadPin(KEY5_GPIO_Port, KEY5_Pin));
+        if(paused)
+        {
+            STEER_TIMER_STOP();
+            while(paused)
+            {
+                lefl_key_update(&pause_key, !HAL_GPIO_ReadPin(KEY5_GPIO_Port, KEY5_Pin));
+                fezui_paused();
+            }
+            STEER_TIMER_START();
+        }
+
+#endif
         if(fabs(phi_pid.errdat)>FAULT_TOLERANT)
         {
             phi_control();
@@ -108,6 +124,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if(fabs(theta_pid.errdat)>FAULT_TOLERANT)
         {
             theta_control();
+        }
+        if(fabs(phi_pid.errdat)<=ALERT_TOLERANT&&fabs(theta_pid.errdat)<ALERT_TOLERANT)
+        {
+            HAL_GPIO_WritePin(ALERT_LED_GPIO_Port, ALERT_LED_Pin, GPIO_PIN_SET);
+            HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_RESET);
+        }
+        else
+        {
+            HAL_GPIO_WritePin(ALERT_LED_GPIO_Port, ALERT_LED_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_SET);
+
         }
     }
 }
@@ -170,6 +197,7 @@ int main(void)
   theta_pid.pidout = steer_set_theta(90);
   phi_pid.last_pidout = steer_set_phi(90);
   phi_pid.pidout = steer_set_phi(90);
+  //HAL_GPIO_WritePin(BEEP_GPIO_Port, BEEP_Pin, GPIO_PIN_RESET);
   /* USER CODE END 2 */
 
   /* Infinite loop */

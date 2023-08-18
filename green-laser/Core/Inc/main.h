@@ -86,6 +86,10 @@ void delay_us(__IO uint32_t delay);
 #define KEY5_GPIO_Port GPIOE
 #define F_CS_Pin GPIO_PIN_15
 #define F_CS_GPIO_Port GPIOA
+#define BEEP_Pin GPIO_PIN_0
+#define BEEP_GPIO_Port GPIOE
+#define ALERT_LED_Pin GPIO_PIN_1
+#define ALERT_LED_GPIO_Port GPIOE
 
 /* USER CODE BEGIN Private defines */
 

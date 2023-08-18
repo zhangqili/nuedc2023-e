@@ -90,10 +90,10 @@ void adjustpage_load(lefl_page_t *page)
             switch(adjustmenu.selected_index)
             {
                 case 0:
-                    theta_central -= 500;
+                    theta_central -= 100;
                     break;
                 case 1:
-                    phi_central -= 500;
+                    phi_central -= 100;
                     break;
                 default:
                     break;
@@ -111,10 +111,10 @@ void adjustpage_load(lefl_page_t *page)
             switch(adjustmenu.selected_index)
             {
                 case 0:
-                    theta_central += 500;
+                    theta_central += 100;
                     break;
                 case 1:
-                    phi_central += 500;
+                    phi_central += 100;
                     break;
                 default:
                     break;

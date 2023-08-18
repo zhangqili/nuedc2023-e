@@ -23,10 +23,6 @@ lefl_menu_t mainmenu = {
 #define RECT_HALF_LEHGTH 260
 #define ROW_HEIGHT 8
 extern cartesian_coordinate_system_t central_point;
-static cartesian_coordinate_system_t frame_point1 = {X_CENTRAL-280,Y_CENTRAL,Z_CENTRAL+260};
-static cartesian_coordinate_system_t frame_point2 = {X_CENTRAL+260,Y_CENTRAL,Z_CENTRAL+260};
-static cartesian_coordinate_system_t frame_point3 = {X_CENTRAL+260,Y_CENTRAL,Z_CENTRAL-260};
-static cartesian_coordinate_system_t frame_point4 = {X_CENTRAL-280,Y_CENTRAL,Z_CENTRAL-260};
 
 static fezui_scrollview_t scrollview ={.content_height=ITEM_HEIGHT*3,.content_width=40};
 static float target_ordinate=0;
@@ -62,7 +58,7 @@ void menupage_draw(lefl_page_t *page)
     fezui_draw_cursor(&fezui, &cursor);
 
 
-    if(moving)
+    if(1)
     {
         u8g2_SetFont(&(fezui.u8g2), u8g2_font_5x7_mf);
         //u8g2_ClearBuffer(&(fezui.u8g2));
@@ -82,7 +78,7 @@ void menupage_draw(lefl_page_t *page)
         sprintf(fezui_buffer,"ms:%ld",move_step);
         u8g2_DrawStr(&(fezui.u8g2), 64, ROW_HEIGHT*5, fezui_buffer);
 
-        sprintf(fezui_buffer,"qc:%ld",Queue_Count(&point_queue));
+        sprintf(fezui_buffer,"qc:%d",Queue_Count(&point_queue));
         u8g2_DrawStr(&(fezui.u8g2), 64, ROW_HEIGHT*6, fezui_buffer);
 
         sprintf(fezui_buffer,"%.0lf",target_actual_point.x);

@@ -12,7 +12,7 @@
 #include "rng.h"
 #include "pid-control.h"
 
-#define INTERVAL 1
+#define INTERVAL 0.01
 lefl_page_t pidpage={pidpage_logic,pidpage_draw,pidpage_load};
 
 extern bool number_editing;
@@ -64,22 +64,22 @@ void pidpage_draw(lefl_page_t *page)
 {
     u8g2_SetFont(&(fezui.u8g2), u8g2_font_5x7_mf);
 
-    sprintf(fezui_buffer,"%.0lf",theta_pid.pGain);
+    sprintf(fezui_buffer,"%.2lf",theta_pid.pGain);
     u8g2_DrawStr(&(fezui.u8g2), 64, ROW_HEIGHT*1 - (u8g2_int_t)scrollview.ordinate, fezui_buffer);
 
-    sprintf(fezui_buffer,"%.0lf",theta_pid.iGain);
+    sprintf(fezui_buffer,"%.2lf",theta_pid.iGain);
     u8g2_DrawStr(&(fezui.u8g2), 64, ROW_HEIGHT*2 - (u8g2_int_t)scrollview.ordinate, fezui_buffer);
 
-    sprintf(fezui_buffer,"%.0lf",theta_pid.dGain);
+    sprintf(fezui_buffer,"%.2lf",theta_pid.dGain);
     u8g2_DrawStr(&(fezui.u8g2), 64, ROW_HEIGHT*3 - (u8g2_int_t)scrollview.ordinate, fezui_buffer);
 
-    sprintf(fezui_buffer,"%.0lf",phi_pid.pGain);
+    sprintf(fezui_buffer,"%.2lf",phi_pid.pGain);
     u8g2_DrawStr(&(fezui.u8g2), 64, ROW_HEIGHT*4 - (u8g2_int_t)scrollview.ordinate, fezui_buffer);
 
-    sprintf(fezui_buffer,"%.0lf",phi_pid.iGain);
+    sprintf(fezui_buffer,"%.2lf",phi_pid.iGain);
     u8g2_DrawStr(&(fezui.u8g2), 64, ROW_HEIGHT*5 - (u8g2_int_t)scrollview.ordinate, fezui_buffer);
 
-    sprintf(fezui_buffer,"%.0lf",phi_pid.dGain);
+    sprintf(fezui_buffer,"%.2lf",phi_pid.dGain);
     u8g2_DrawStr(&(fezui.u8g2), 64, ROW_HEIGHT*6 - (u8g2_int_t)scrollview.ordinate, fezui_buffer);
 
     fezui_draw_scrollview(&fezui, 0, 0, 128, 64, &scrollview);
@@ -144,7 +144,7 @@ void pidpage_load(lefl_page_t *page)
         }
         else
         {
-            lefl_menu_index_increase(&pidmenu, -1);
+            lefl_menu_index_increase(&pidmenu, 1);
         }
     });
     key_up.key_cb = lambda(void, (lefl_key_t*k)
@@ -177,7 +177,7 @@ void pidpage_load(lefl_page_t *page)
         }
         else
         {
-            lefl_menu_index_increase(&pidmenu, 1);
+            lefl_menu_index_increase(&pidmenu, -1);
         }
     });
 }

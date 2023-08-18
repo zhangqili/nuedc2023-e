@@ -96,6 +96,13 @@ void fezui_read_pid()
     W25qxx_ReadBytes((uint8_t*)(&(phi_pid.dGain)),0+4*5,4);
 }
 
+void fezui_paused()
+{
+    u8g2_ClearBuffer(&(fezui.u8g2));
+    u8g2_SetFont(&(fezui.u8g2), u8g2_font_6x12_tf);
+    u8g2_DrawStr(&(fezui.u8g2),0,32,"paused");
+    u8g2_SendBuffer(&(fezui.u8g2));
+}
 
 void fezui_read_central()
 {

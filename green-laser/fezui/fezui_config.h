@@ -30,8 +30,10 @@
 void Analog_Read();
 void fezui_read_pid();
 void fezui_read_central();
+void fezui_read_all();
 void fezui_save();
 void fezui_waiting();
+void fezui_paused();
 
 extern lefl_link_frame_t mainframe;
 

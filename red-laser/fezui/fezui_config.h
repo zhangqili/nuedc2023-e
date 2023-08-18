@@ -31,7 +31,10 @@ void Analog_Read();
 void fezui_read_pid();
 void fezui_read_central();
 void fezui_save();
+void fezui_read_all();
 void fezui_waiting();
+void fezui_reset();
+void fezui_paused();
 
 extern lefl_link_frame_t mainframe;
 
@@ -71,6 +74,11 @@ extern lefl_page_t paperpage;
 void paperpage_logic(lefl_page_t *page);
 void paperpage_draw(lefl_page_t *page);
 void paperpage_load(lefl_page_t *page);
+
+extern lefl_page_t fixedpaperpage;
+void fixedpaperpage_logic(lefl_page_t *page);
+void fixedpaperpage_draw(lefl_page_t *page);
+void fixedpaperpage_load(lefl_page_t *page);
 
 extern lefl_page_t pidpage;
 void pidpage_logic(lefl_page_t *page);

@@ -10,6 +10,7 @@
 #include "steer.h"
 #include "stdlib.h"
 #include "rng.h"
+#include "pid-control.h"
 
 lefl_page_t paperpage={paperpage_logic,paperpage_draw,paperpage_load};
 
@@ -19,6 +20,7 @@ extern bool number_editing;
 
 cartesian_coordinate_system_t a4_points[4]={{146,Y_CENTRAL,188},{194,Y_CENTRAL,125},{132,Y_CENTRAL,64},{75,Y_CENTRAL,118}};
 cartesian_coordinate_system_t a4_actual_points[4]={{0,Y_CENTRAL,0},{0,Y_CENTRAL,0},{0,Y_CENTRAL,0},{0,Y_CENTRAL,0}};
+cartesian_coordinate_system_t a4_central_point={0,Y_CENTRAL,0};
 
 static fezui_scrollview_t scrollview ={.content_height=12*9,.content_width=40};
 
@@ -161,9 +163,20 @@ void paperpage_load(lefl_page_t *page)
     {
         if(papermenu.selected_index == 8)
         {
+            a4_central_point.x=(a4_actual_points[0].x+a4_actual_points[1].x+a4_actual_points[2].x+a4_actual_points[3].x)/4.0;
+            a4_central_point.z=(a4_actual_points[0].z+a4_actual_points[1].z+a4_actual_points[2].z+a4_actual_points[3].z)/4.0;
+#define DISCRETE_CONTROL 1
 #if DISCRETE_CONTROL == 1
             fezui_waiting();
+            steer_set_cartesian(a4_actual_points);
+            HAL_Delay(1000);
+            //pid_set_output(&a4_central_point);
+
+#if DISCRETE_MOVE == 1
+            move_count = 1;
+#else
             move_count = 100;
+#endif
             moving = true;
             from_actual_point = a4_actual_points+0;
             to_actual_point = a4_actual_points+0;
@@ -172,6 +185,7 @@ void paperpage_load(lefl_page_t *page)
             Queue_Push(&point_queue, a4_actual_points+3);
             Queue_Push(&point_queue, a4_actual_points+0);
             STEER_TIMER_START();
+
             //while(moving);
 #else
             fezui_waiting();

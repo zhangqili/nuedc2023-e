@@ -25,7 +25,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include "queue.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -33,6 +32,7 @@
 #include "fezui.h"
 #include "communication.h"
 #include "pid-control.h"
+#include "lefl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -94,17 +94,41 @@ void delay_us(__IO uint32_t delay)
 }
 
 
-#define FAULT_TOLERANT 20 //容错，单位mm
+#define FAULT_TOLERANT 8 //容错，单位mm
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM6)
     {
+#if DISCRETE_MOVE == 1
+        move_interval_i+=1;
+        if(move_interval_i>=move_interval)
+        {
+            move_interval_i=0;
+            move_step++;
+            get_point_on_line(&target_actual_point, from_actual_point, to_actual_point, move_count, move_step);
+        }
+#else
         get_point_on_line(&target_actual_point, from_actual_point, to_actual_point, move_count, move_step);
+        move_step++;
+#endif
+#if PAUSE_ENABLE  == 1
+        lefl_key_update(&pause_key, !HAL_GPIO_ReadPin(KEY5_GPIO_Port, KEY5_Pin));
+        if(paused)
+        {
+            STEER_TIMER_STOP();
+            while(paused)
+            {
+                lefl_key_update(&pause_key, !HAL_GPIO_ReadPin(KEY5_GPIO_Port, KEY5_Pin));
+                fezui_paused();
+            }
+            STEER_TIMER_START();
+        }
+
+#endif
         phi_pid.errdat = current_actual_point.x-target_actual_point.x;
         theta_pid.errdat = current_actual_point.z-target_actual_point.z;
         phi_control();
         theta_control();
-        move_step++;
         if(move_step>=move_count)
         {
             move_step=move_count;
@@ -115,7 +139,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
                 {
                     from_actual_point = to_actual_point;
                     to_actual_point = temp_point;
-                    move_count = cartesian_length(from_actual_point, to_actual_point)/4;
+                    move_count = cartesian_length(from_actual_point, to_actual_point)/(DISCRETE_MOVE_PARAMETER*1.5);
                 }
                 else
                 {
@@ -172,17 +196,19 @@ int main(void)
   MX_RNG_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
+
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_3);
   HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
+  pause_key.key_cb = lambda(void,(lefl_key_t*){paused=!paused;});
   Queue_Init(&point_queue, point_collection, 16);
   fezui_init();
   //HAL_TIM_Base_Start_IT(&htim5);
   Communication_Enable(&huart1,USART1_RX_Buffer,BUFFER_LENGTH);
   steer_set_cartesian(&central_point);
-
-  //HAL_Delay(1000);
-  //steer_linear_follow(&f_point,&k_point,4000);
-  //HAL_Delay(1000);
+  theta_pid.last_pidout = steer_set_theta(90);
+  theta_pid.pidout = steer_set_theta(90);
+  phi_pid.last_pidout = steer_set_phi(90);
+  phi_pid.pidout = steer_set_phi(90);
   /* USER CODE END 2 */
 
   /* Infinite loop */
